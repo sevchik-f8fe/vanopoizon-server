@@ -7,7 +7,7 @@ import { config } from 'dotenv';
 import mongoose from "mongoose";
 import crypto from "crypto"
 
-import { getProductsReq, getFilteredProductsReq, getMiniProductListReq, getCitiesReq, getPvzsReq, getProductBySpuReq, getSpuByLinkReq } from "./apiRequests.js";
+import { getProductsReq, getFilteredProductsReq, getMiniProductListReq, getCitiesReq, getPvzsReq, getProductBySpuReq, getSpuByLinkReq } from "/apiRequests.js";
 
 config({ path: './.env' });
 const app = express();
