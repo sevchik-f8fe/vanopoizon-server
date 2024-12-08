@@ -7,14 +7,14 @@ import { config } from 'dotenv';
 import mongoose from "mongoose";
 import crypto from "crypto"
 
-import { getProductsReq, getFilteredProductsReq, getMiniProductListReq, getCitiesReq, getPvzsReq, getProductBySpuReq, getSpuByLinkReq } from "/apiRequests.js";
+import { getProductsReq, getFilteredProductsReq, getMiniProductListReq, getCitiesReq, getPvzsReq, getProductBySpuReq, getSpuByLinkReq } from "./apiRequests.js";
 
 config({ path: './.env' });
 const app = express();
 
 axiosRetry(axios, { retries: 5 });
 app.use(express.json());
-app.use(cors());
+app.use(cors('https://sevchik-f8fe.github.io/vanopoizon/'));
 
 const proxyMiddleware = createProxyMiddleware({
     target: 'https://poizon-api.com/api/dewu/',
@@ -35,12 +35,10 @@ const isTgUser = (req, res, next) => {
     let secret_key = hmacSHA256(process.env.TG_TOKEN, req.body.tg.initData);
 
     if (hmacSHA256(req.body.tg.initData, secret_key) == req.body.tg.initDataUnsafe.hash) {
-        // console.log('ok');
         req.body.access = 'ok';
         next();
     } else {
         req.body.access = 'no';
-        // console.log('no');
         next();
     }
 
@@ -61,8 +59,8 @@ app.post('/vanopoizon/api/getPvzs', getPvzsReq)
 app.post('/vanopoizon/api/getProductBySpu', getProductBySpuReq)
 app.post('/vanopoizon/api/getSpuByLink', getSpuByLinkReq)
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT;
 
 app.listen(PORT, () => {
-    console.log(`server OK!`);
+    console.log(`server OK! on port ${PORT}`);
 });
