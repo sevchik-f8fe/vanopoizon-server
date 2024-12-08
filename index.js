@@ -9,7 +9,7 @@ import crypto from "crypto"
 
 import { getProductsReq, getFilteredProductsReq, getMiniProductListReq, getCitiesReq, getPvzsReq, getProductBySpuReq, getSpuByLinkReq } from "./apiRequests.js";
 
-config({ path: './src/.env' });
+config({ path: './.env' });
 const app = express();
 
 axiosRetry(axios, { retries: 5 });
