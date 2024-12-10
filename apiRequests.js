@@ -83,7 +83,7 @@ export const getCitiesReq = async (req, res) => {
 
         const secret_token = `Bearer ${token}`
 
-        const cities = await axios.get(`https://api.cdek.ru/v2/location/cities?country_codes=RU&size=10000`,
+        const cities = await axios.get(`https://api.cdek.ru/v2/location/cities?country_codes=RU&country_codes=BLR&size=15000`,
             {
                 headers: {
                     'Accept': 'application/json',
