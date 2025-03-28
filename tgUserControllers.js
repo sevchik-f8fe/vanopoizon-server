@@ -28,34 +28,51 @@ export const isValidInitData = (req, res, next) => {
     if (hash === calcHash) {
         next();
     } else {
-        return res.status(403).json({ message: 'Ошибка авторизации' });
+        return res.status(500).json({ err: 'Ошибка' });
     }
 }
+
+const generateReferralCode = () => {
+    const bytes = crypto.randomBytes(9);
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let referralCode = '';
+    for (let i = 0; i < 12; i++) {
+        referralCode += chars[bytes[i % bytes.length] % chars.length];
+    }
+    return referralCode;
+};
 
 export const userTgAuth = async (req, res) => {
     try {
         const params = new URLSearchParams(req.body.tg);
         const userData = JSON.parse(params.get('user'));
 
-        const currentUser = await User.findOne({ userId: userData.id });
+        const userId = userData.id;
+        const userName = userData.username;
 
-        if (currentUser) {
-            return res.json({ user: currentUser })
-            //            res.json({ userName: currentUser.userName, fullName: currentUser.fullName, pointCount: currentUser.pointCount, orders: currentUser.orders, phone: currentUser.phone, city: cur>
-        } else {
-            const doc = new User({
-                userId: userData.id,
-                userName: userData.username,
-                pointCount: 0
-            });
+        const user = await User.findOneAndUpdate(
+            { userId: userId },
+            {
+                userId: userId,
+                userName: userName,
+                $setOnInsert: {
+                    pointCount: 0,
+                    refferalCode: generateReferralCode(),
+                }
+            },
+            {
+                upsert: true,
+                new: true,
+                setDefaultsOnInsert: true
+            }
+        );
 
-            const user = await doc.save();
-            res.json({ user: user })
-        }
+        res.json({ user: user });
     } catch (err) {
-        res.status(403).json({ message: "Ошибка получения" });
+        res.status(500).json({ err: "Ошибка" });
     }
 }
+
 
 export const saveDeliveryData = async (req, res) => {
     try {
@@ -69,17 +86,17 @@ export const saveDeliveryData = async (req, res) => {
         const userId = req.body?.userId;
 
         if (!mongoose.Types.ObjectId.isValid(userId)) {
-            return res.status(403).json({ message: 'Ошибка авторизации' });
+            return res.status(403).json({ err: 'Ошибка' });
         }
 
         const updatedUser = await User.findByIdAndUpdate(userId, { delivery: { phone, fullName, deliveryType, city, pvz, fullAddress } }, { new: true });
 
         if (!updatedUser) {
-            return res.status(403).json({ user: 'Ошибка авторизации' });
+            return res.status(500).json({ err: 'Ошибка' });
         }
 
         res.json({ user: updatedUser });
     } catch (err) {
-        res.status(403).json({ message: 'Ошибка авторизации' });
+        res.status(500).json({ err: 'Ошибка' });
     }
 }

@@ -1,33 +1,15 @@
 import mongoose from "mongoose";
-import Favorite from "./schemas/Favorite.js";
-
-export const getFavorites = async (req, res) => {
-    try {
-        const { userId } = req.body;
-        const favorites = await Favorite.find({ userId });
-
-        res.json({ favorites: favorites.products });
-    } catch (err) {
-        res.status(500).json({ error: "Ошибка получения данных" })
-    }
-}
+import User from "./schemas/User.js"
 
 export const addToFavorites = async (req, res) => {
     try {
-        const { userId, spuId } = req.body;
+        const { userId, spuId, photoUrl, title } = req.body;
+        const product = { spuId, photoUrl, title };
 
-        const favorite = findOne({ userId, spuId });
-
-        if (favorite) {
-            res.json({ favorite });
-        } else {
-            const doc = new Favorite({ userId, spuId });
-            const favorite = await doc.save();
-
-            res.json({ favorite });
-        }
+        const newUser = await User.findOneAndUpdate({ _id: userId }, { $addToSet: { favorites: product } }, { new: true });
+        res.json({ user: newUser });
     } catch (err) {
-        res.status(500).json({ error: "Ошибка получения данных" });
+        res.status(500).json({ error: "Ошибка" });
     }
 }
 
@@ -35,10 +17,9 @@ export const removeFromFavorites = async (req, res) => {
     try {
         const { userId, spuId } = req.body;
 
-        await Favorite.findOneAndDelete({ userId, spuId });
-
-        res.status(204).send();
+        const newUser = await User.findOneAndUpdate({ _id: userId }, { $pull: { favorites: { spuId: spuId } } }, { new: true });
+        res.json({ user: newUser });
     } catch (err) {
-        res.status(500).json({ error: "Ошибка получения данных" });
+        res.status(500).json({ error: "Ошибка" });
     }
 }

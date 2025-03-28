@@ -8,26 +8,26 @@ export const checkAuthMiddleware = (req, res, next) => {
 
     if (token) {
         try {
-            const decodedToken = jwt.verify(token, 'JWT_TOKEN');
+            const decodedToken = jwt.verify(token, 'JWT');
             req.body.userId = decodedToken._id;
 
             next();
         } catch (err) {
-            return res.status(403).json({ message: 'Ошибка аутентификации' })
+            res.status(500).json({ err: 'Ошибка' });
         }
     } else {
-        return res.status(403).json({ message: 'Ошибка аутентификации' })
+        res.status(500).json({ err: 'Ошибка' });
     }
 }
 
 export const checkAuth = async (req, res) => {
     try {
         const currentAdmin = await Admin.findById(req.body.userId);
-        if (!currentAdmin) return res.status(403).json({ message: 'Ошибка аутентификации' });
+        if (!currentAdmin) return res.status(500).json({ err: 'Ошибка' });
 
         res.json({ success: true });
     } catch (err) {
-        res.status(403).json({ message: 'Ошибка аутентификации' });
+        res.status(500).json({ err: 'Ошибка' });
     }
 }
 
@@ -39,17 +39,17 @@ export const auth = async (req, res) => {
             const compareResult = await bcrypt.compare(req.body.password, currentAdmin.passwordHash);
 
             if (!compareResult) {
-                return res.status(400).json({ message: 'Неверный логин или пароль' })
+                res.status(500).json({ err: 'Ошибка' });
             }
         } else {
-            return res.status(400).json({ message: 'Неверный логин или пароль' })
+            res.status(500).json({ err: 'Ошибка' });
         }
 
         const token = jwt.sign(
             {
                 _id: currentAdmin._id,
             },
-            'JWT_TOKEN',
+            'JWT',
             {
                 expiresIn: '3h'
             }
@@ -57,6 +57,6 @@ export const auth = async (req, res) => {
 
         res.json({ token })
     } catch (err) {
-        console.log('Ошибка при получении данных:', err);
+        res.status(500).json({ err: 'Ошибка' });
     }
 }
